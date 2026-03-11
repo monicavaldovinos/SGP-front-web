@@ -1,0 +1,15 @@
+html, body {
+      overflow: hidden;
+    }
+    main {
+      width: 100vw;
+      height: 100vh;
+      font-family: 'Istok Web', sans-serif;
+    }
+    .btn-degraded {
+        background: linear-gradient(90deg, #378C8E, #033E3F);
+        color: white;
+    }
+    .btn-degraded:hover {
+        opacity: 0.9;
+    }
