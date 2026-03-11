@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "../public/Login";
-import Register from "../public/Register";
-import PasswordRecovery from "../public/PasswordRecovery";
+import Login from "../modules/public/Login";
+import Register from "../modules/public/Register";
+import PasswordRecovery from "../modules/public/PasswordRecovery";
 import Error404 from "../error/Error404";
 import Error401 from "../error/Error401";
 

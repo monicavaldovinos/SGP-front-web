@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import AuthRouter from "./modules/router/AuthRouter";
-import PublicRouter from "./modules/router/PublicRouter";
 import { useNavigate } from "react-router-dom";
+import AuthRouter from "./router/AuthRouter";
+import PublicRouter from "./router/PublicRouter";
 
 export default function App() {
   const [session, setSession] = useState(false);

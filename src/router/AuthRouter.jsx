@@ -1,8 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import Home from "../auth/home/Home";
+import Home from "../modules/auth/home/Home";
 import Error404 from "../error/Error404";
-import CustomSidebar from "../auth/components/CustomSidebar";
-import Projects from "../auth/projects/Project";
+import CustomSidebar from "../modules/auth/components/CustomSidebar";
+import Projects from "../modules/auth/projects/Project";
 
 export default function AuthRouter({setSession}) {
 
