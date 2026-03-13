@@ -9,7 +9,7 @@ export default function Register() {
             navigate("/auth/home");
           }
     })
-
+// 
     return(<main className="d-flex align-items-center justify-content-center">
         <div className="card border-0 rounded-4 shadow" style={{width: 400}}>
             <div className="card-body">

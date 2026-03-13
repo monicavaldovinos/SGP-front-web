@@ -1,46 +1,77 @@
 import { NavLink, useNavigate } from "react-router-dom";
 
-export default function CustomSidebar({setSession}) {
+export default function CustomSidebar({ setSession }) {
+  const navigate = useNavigate();
 
-    const navigate =useNavigate();
-    const closeSession =()=>{
-        sessionStorage.removeItem('token');
-        navigate('/');
-        setSession(false);
-    }
-    return(
-        <div className="p-4 col-2 bg-body-tertiary shadow">
+  const closeSession = () => {
+    sessionStorage.removeItem("token");
+    navigate("/");
+    setSession(false);
+  };
 
-            <div className="d-flex flex-column" style={{height: '100%'}}>
-                <h5 className="mb-4"><i className="fs-3 bi bi-shop"></i>&nbsp; Utez</h5>
-                <NavLink to="/home" className={({isActive}) => `text-start btn btn${isActive ? '' : '-outline'}-primary mb-3`}>
-                    <i className="bi bi-house"></i>&nbsp;Incio
-                </NavLink>
-                
-                <NavLink to="/teams" className={({ isActive }) =>`text-start btn btn${isActive ? "" : "-outline"}-primary mb-3`}>
-                    <i className="bi bi-people"></i>&nbsp;Equipos
-                </NavLink>
+const linkClass = ({isActive}) =>
+  `text-start text-white btn rounded-3 mb-3 w-100 py-3 ${isActive ? 'bg-white bg-opacity-25' : ''}`;
 
-                <NavLink to="/projects" className={({isActive}) => `text-start btn btn${isActive ? '' : '-outline'}-primary mb-3`}>
-                    <i className="bi bi-bag"></i>&nbsp;Proyectos
-                </NavLink>
+  return (
+    <div className="col-2 bg-sidebar shadow p-4">
+      <div className="d-flex flex-column" style={{ height: "100%" }}>
+        <h5 className="mb-4">
+          <i className="fs-3 bi bi-shop"></i>&nbsp; Utez
+        </h5>
 
-                <NavLink to="/users" className={({ isActive }) => `text-start btn btn${isActive ? "" : "-outline"}-primary mb-3`}>
-                     <i className="bi bi-person"></i>&nbsp;Usuarios
-                </NavLink>
+        <div style={{ margin: "0 -1rem" }}>
+          <NavLink
+            to="/auth/home"
+            className={linkClass}
+            style={{ paddingLeft: "1.5rem" }}
+          >
+            <i className="bi bi-house-door-fill"></i>&nbsp;Inicio
+          </NavLink>
+          <br/>
 
-                <NavLink to="/brands" className={({isActive}) => `text-start btn btn${isActive ? '' : '-outline'}-primary mb-3`}>
-                    <i className="bi bi-tag"></i>&nbsp;Marcas
-                </NavLink>
+          <NavLink
+            to="/auth/teams"
+            className={linkClass}
+            style={{ paddingLeft: "1.5rem" }}
+          >
+            <i className="bi bi-people-fill"></i>&nbsp;Equipos
+          </NavLink>
+          <br/>
 
+          <NavLink
+            to="/auth/projects"
+            className={linkClass}
+            style={{ paddingLeft: "1.5rem" }}
+          >
+            <i className="bi bi-folder-fill"></i>&nbsp;Proyectos
+          </NavLink>
+          <br />
 
+          <NavLink
+            to="/auth/users"
+            className={linkClass}
+            style={{ paddingLeft: "1.5rem" }}
+          >
+            <i className="bi bi-person-fill"></i>&nbsp;Usuarios
+          </NavLink>
+          <br />
 
-
-                <button onClick= {() => closeSession()}className="text-start btn btn-outline-danger mt-auto">
-                    <i className="bi bi-box-arrow-left"></i>&nbsp;Cerrar sesión
-                </button>
-            </div>
-
+          <NavLink
+            to="/auth/brands"
+            className={linkClass}
+            style={{ paddingLeft: "1.5rem" }}
+          >
+            <i className="bi bi-cash-stack"></i>&nbsp;Tareas
+          </NavLink>
         </div>
-    );
+
+        <button
+          onClick={closeSession}
+          className="text-start btn btn-outline-danger mt-auto"
+        >
+          <i className="bi bi-box-arrow-left"></i>&nbsp;Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
 }

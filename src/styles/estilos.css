@@ -13,3 +13,8 @@ html, body {
     .btn-degraded:hover {
         opacity: 0.9;
     }
+
+    .bg-sidebar {
+         background: linear-gradient(90deg, #15364A, #186668);
+        color: white;
+    }

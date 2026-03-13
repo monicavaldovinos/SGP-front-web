@@ -1,16 +1,20 @@
-export default function LeadersTable({ data = [] }) {
+export default function LeadersTable({
+  data = [],
+  onEdit,
+  onDelete,
+  onView
+}) {
   return (
     <div className="table-responsive">
-      <table className="table table-striped table-hover align-middle">
-        <thead>
+      <table className="table table-hover align-middle">
+        
+        <thead className="teams-table-head">
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Nombre</th>
-            <th scope="col">Usuario</th>
-            <th scope="col">Equipo</th>
-            <th scope="col" className="text-center">
-              Acciones
-            </th>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Equipo</th>
+            <th className="text-center">Acciones</th>
           </tr>
         </thead>
 
@@ -24,28 +28,44 @@ export default function LeadersTable({ data = [] }) {
           ) : (
             data.map((u, index) => (
               <tr key={u.id ?? index}>
-                <th scope="row">{index + 1}</th>
+                <td>{index + 1}</td>
+
                 <td>{u.name ?? "-"}</td>
                 <td>{u.username ?? "-"}</td>
                 <td>{u.team ?? "-"}</td>
 
-                <td className="text-center">
-                  <button className="btn btn-sm btn-primary me-2" type="button">
-                    <i className="bi bi-pencil"></i>
+                <td className="text-center" style={{ width: 180 }}>
+                  
+                  <button
+                    className="action-btn"
+                    title="Editar"
+                    onClick={() => onEdit(u)}
+                  >
+                    <i className="bi bi-pencil-fill action-icon"></i>
                   </button>
 
-                  <button className="btn btn-sm btn-danger me-2" type="button">
-                    <i className="bi bi-trash"></i>
+                  <button
+                    className="action-btn"
+                    title="Eliminar"
+                    onClick={() => onDelete(u)}
+                  >
+                    <i className="bi bi-trash-fill action-icon"></i>
                   </button>
 
-                  <button className="btn btn-sm btn-secondary" type="button">
-                    <i className="bi bi-eye"></i>
+                  <button
+                    className="action-btn"
+                    title="Ver"
+                    onClick={() => onView(u)}
+                  >
+                    <i className="bi bi-eye-fill action-icon"></i>
                   </button>
+
                 </td>
               </tr>
             ))
           )}
         </tbody>
+
       </table>
     </div>
   );

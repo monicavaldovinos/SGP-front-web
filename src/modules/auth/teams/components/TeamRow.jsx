@@ -1,29 +1,42 @@
-export default function TeamRow({ team, index }) {
-  if (!team) return null;
+export default function TeamRow({ team, onEdit, onDelete, onView }) {
 
   return (
+
     <tr>
-      <th scope="row">{index + 1}</th>
-      <td>{team.name}</td>
-      <td>{team.leader}</td>
-      <td>{team.members}</td>
 
-      <td className="text-center">
-        {/* EDITAR */}
-        <button className="btn btn-sm btn-primary me-2" type="button">
-          <i className="bi bi-pencil"></i>
+      <td>{team.nombre}</td>
+      <td>{team.lider}</td>
+      <td>{team.miembros}</td>
+
+      <td className="text-center" style={{ width: 180 }}>
+
+        <button
+          className="action-btn"
+          title="Editar"
+          onClick={() => onEdit(team)}
+        >
+          <i className="bi bi-pencil-fill action-icon"></i>
         </button>
 
-        {/* ELIMINAR */}
-        <button className="btn btn-sm btn-danger me-2" type="button">
-          <i className="bi bi-trash"></i>
+        <button
+          className="action-btn"
+          title="Eliminar"
+          onClick={() => onDelete(team)}
+        >
+          <i className="bi bi-trash-fill action-icon"></i>
         </button>
 
-        {/* VER */}
-        <button className="btn btn-sm btn-secondary" type="button">
-          <i className="bi bi-eye"></i>
+        <button
+          className="action-btn"
+          title="Ver"
+          onClick={() => onView(team)}
+        >
+          <i className="bi bi-eye-fill action-icon"></i>
         </button>
+
       </td>
+
     </tr>
+
   );
 }
