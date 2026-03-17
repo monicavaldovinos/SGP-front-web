@@ -1,94 +1,302 @@
 import { useEffect, useMemo, useState } from "react";
 import "../../../styles/projects.css";
+
 import CreateProjectModal from "./components/CreateProject";
 import EditProjectModal from "./components/EditProject";
 import ViewProjectModal from "./components/ViewProject";
 import DeleteProjectModal from "./components/DeleteProject";
 import MaterialsProjectModal from "./components/MaterialsProjectModal";
 import ProjectRow from "./components/ProjectRow";
+
 import {
   getProjects,
   createProject,
   updateProject,
   deleteProject,
 } from "../../../api/projectService";
+import { getTeams } from "../../../api/teamService";
 
 export default function Projects() {
   const [query, setQuery] = useState("");
   const [projects, setProjects] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
   const [selectedProject, setSelectedProject] = useState(null);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMaterialsModal, setShowMaterialsModal] = useState(false);
+
+  const [materialsContext, setMaterialsContext] = useState(null);
+  const [materialsByProject, setMaterialsByProject] = useState({});
+
+  const normalizeProject = (project) => ({
+    id: project.idProyecto || project.id,
+    name: project.nombre || project.nombreProyecto || "Sin nombre",
+    teamId: project.equipo?.idEquipo
+      ? String(project.equipo.idEquipo)
+      : project.equipo?.id
+      ? String(project.equipo.id)
+      : "",
+    team:
+      project.equipo?.nombreEquipo ||
+      project.equipo?.nombre ||
+      "Sin equipo",
+    leaderId: project.lider?.idUsuario
+      ? String(project.lider.idUsuario)
+      : project.lider?.id
+      ? String(project.lider.id)
+      : "",
+    leader: project.lider
+      ? [
+          project.lider.nombre,
+          project.lider.apellidoPaterno,
+          project.lider.apellidoMaterno,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      : "Sin líder",
+    budget: project.presupuestoTotal ?? 0,
+    startDate: project.fechaInicio || "",
+    endDate: project.fechaFin || "",
+    description: project.descripcion || "",
+    status: project.estado || "PENDIENTE",
+    original: project,
+  });
+
+  const normalizeTeam = (team) => ({
+    id: String(team.idEquipo || team.id),
+    name: team.nombreEquipo || team.nombre || "Sin nombre",
+    leaderId: team.lider?.idUsuario
+      ? String(team.lider.idUsuario)
+      : team.idLider
+      ? String(team.idLider)
+      : "",
+    leader: team.lider
+      ? [team.lider.nombre, team.lider.apellidoPaterno, team.lider.apellidoMaterno]
+          .filter(Boolean)
+          .join(" ")
+      : team.nombreLider || "Sin líder",
+  });
+
   const handleGetProjects = async () => {
-  try {
-    setLoading(true);
-
-    const response = await getProjects();
-    console.log("Respuesta proyectos:", response);
-
-    const projectList = Array.isArray(response)
-      ? response
-      : Array.isArray(response?.data)
-      ? response.data
-      : [];
-
-    const formattedProjects = projectList.map((project) => ({
-      id: project.idProyecto,
-      name: project.nombre || "Sin nombre",
-      team: project.equipo?.nombre || "Sin equipo",
-      budget: project.presupuestoTotal ?? 0,
-      startDate: project.fechaInicio || "",
-      endDate: project.fechaFin || "",
-      description: project.descripcion || "",
-      logo: project.logo || "",
-      member: project.lider?.nombre || "",
-      original: project,
-    }));
-
-    setProjects(formattedProjects);
-  } catch (error) {
-    console.log("Error al obtener proyectos:", error);
-    setProjects([]);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  useEffect(() => {
-    handleGetProjects();
-  }, []);
-
-  const handleAddProject = async (newProject) => {
     try {
-      await createProject(newProject);
-      await handleGetProjects();
-      alert("Proyecto guardado correctamente");
+      setLoading(true);
+
+      const response = await getProjects();
+      const projectList = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
+
+      setProjects(projectList.map(normalizeProject));
     } catch (error) {
-      console.log("Error al crear proyecto:", error);
-      alert("No se pudo guardar el proyecto");
+      console.error("Error al obtener proyectos:", error);
+      setProjects([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditProject = async (id, updatedProject) => {
+  const handleGetTeams = async () => {
     try {
-      await updateProject(id, updatedProject);
-      await handleGetProjects();
-      alert("Proyecto actualizado correctamente");
+      const response = await getTeams();
+      const teamList = Array.isArray(response)
+        ? response
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
+
+      setTeams(teamList.map(normalizeTeam));
     } catch (error) {
-      console.log("Error al editar proyecto:", error);
-      alert("No se pudo actualizar el proyecto");
+      console.error("Error al obtener equipos:", error);
+      setTeams([]);
+    }
+  };
+
+  useEffect(() => {
+    handleGetProjects();
+    handleGetTeams();
+  }, []);
+
+  const handleAddProject = async (formData) => {
+    try {
+      setSubmitting(true);
+
+      const selectedTeam = teams.find(
+        (team) => String(team.id) === String(formData.teamId)
+      );
+
+      if (!selectedTeam) {
+        alert("Debes seleccionar un equipo válido.");
+        return;
+      }
+
+      if (!selectedTeam.leaderId) {
+        alert("El equipo seleccionado no tiene líder asignado.");
+        return;
+      }
+
+      const payload = {
+        nombre: formData.name,
+        descripcion: formData.description,
+        fechaFin: formData.endDate,
+        presupuestoTotal: Number(formData.budget),
+        equipo: {
+          idEquipo: Number(formData.teamId),
+        },
+        lider: {
+          idUsuario: Number(selectedTeam.leaderId),
+        },
+      };
+
+      console.log("Payload createProject:", payload);
+
+      await createProject(payload);
+      setShowCreateModal(false);
+      await handleGetProjects();
+      alert("Proyecto guardado correctamente.");
+    } catch (error) {
+      console.error("Error al crear proyecto:", error);
+      console.log("ERROR COMPLETO CREATE PROJECT:", error?.response?.data);
+
+      const responseData = error?.response?.data;
+      const fieldErrors = responseData?.data;
+
+      if (fieldErrors && typeof fieldErrors === "object") {
+        const messages = Object.entries(fieldErrors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join("\n");
+
+        alert(messages);
+      } else {
+        alert(responseData?.message || "No se pudo guardar el proyecto.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditProject = async (id, formData) => {
+    try {
+      setSubmitting(true);
+
+      const selectedTeam = teams.find(
+        (team) => String(team.id) === String(formData.teamId)
+      );
+
+      if (!selectedTeam) {
+        alert("Debes seleccionar un equipo válido.");
+        return;
+      }
+
+      if (!selectedTeam.leaderId) {
+        alert("El equipo seleccionado no tiene líder asignado.");
+        return;
+      }
+
+      const payload = {
+        idProyecto: Number(id),
+        nombre: formData.name,
+        descripcion: formData.description,
+        fechaFin: formData.endDate,
+        presupuestoTotal: Number(formData.budget),
+        equipo: {
+          idEquipo: Number(formData.teamId),
+        },
+        lider: {
+          idUsuario: Number(selectedTeam.leaderId),
+        },
+      };
+
+      console.log("Payload updateProject:", payload);
+
+      await updateProject(id, payload);
+      setShowEditModal(false);
+      await handleGetProjects();
+      alert("Proyecto actualizado correctamente.");
+    } catch (error) {
+      console.error("Error al editar proyecto:", error);
+      console.log("ERROR COMPLETO UPDATE PROJECT:", error?.response?.data);
+
+      const responseData = error?.response?.data;
+      const fieldErrors = responseData?.data;
+
+      if (fieldErrors && typeof fieldErrors === "object") {
+        const messages = Object.entries(fieldErrors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join("\n");
+
+        alert(messages);
+      } else {
+        alert(responseData?.message || "No se pudo actualizar el proyecto.");
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleDeleteProject = async (id) => {
     try {
+      setSubmitting(true);
       await deleteProject(id);
+      setShowDeleteModal(false);
       await handleGetProjects();
-      alert("Proyecto eliminado correctamente");
+      alert("Proyecto eliminado correctamente.");
     } catch (error) {
-      console.log("Error al eliminar proyecto:", error);
-      alert("No se pudo eliminar el proyecto");
+      console.error("Error al eliminar proyecto:", error);
+      alert(error?.response?.data?.message || "No se pudo eliminar el proyecto.");
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  const openCreate = () => {
+    setSelectedProject(null);
+    setShowCreateModal(true);
+  };
+
+  const openEdit = (project) => {
+    setSelectedProject(project);
+    setShowEditModal(true);
+  };
+
+  const openView = (project) => {
+    setSelectedProject(project);
+    setShowViewModal(true);
+  };
+
+  const openDelete = (project) => {
+    setSelectedProject(project);
+    setShowDeleteModal(true);
+  };
+
+  const openMaterials = ({ projectId, projectName, readOnly = false }) => {
+    setMaterialsContext({
+      projectId,
+      projectName,
+      readOnly,
+    });
+    setShowMaterialsModal(true);
+  };
+
+  const currentMaterials = useMemo(() => {
+    const key = materialsContext?.projectId || "draft-project";
+    return materialsByProject[key] || [];
+  }, [materialsByProject, materialsContext]);
+
+  const handleSaveMaterials = (materials) => {
+    const key = materialsContext?.projectId || "draft-project";
+    setMaterialsByProject((prev) => ({
+      ...prev,
+      [key]: materials,
+    }));
+    setShowMaterialsModal(false);
   };
 
   const filteredProjects = useMemo(() => {
@@ -99,10 +307,33 @@ export default function Projects() {
       return (
         p.name?.toLowerCase().includes(q) ||
         p.team?.toLowerCase().includes(q) ||
+        p.leader?.toLowerCase().includes(q) ||
         String(p.budget ?? "").includes(q)
       );
     });
   }, [query, projects]);
+
+  const occupiedTeamIds = projects
+    .filter((p) => (p.status || "").toUpperCase() !== "CANCELADO")
+    .map((p) => String(p.teamId || ""))
+    .filter(Boolean);
+
+  const availableTeamsForCreate = teams.filter(
+    (team) => !occupiedTeamIds.includes(String(team.id))
+  );
+
+  const availableTeamsForEdit = selectedProject
+    ? [
+        ...teams.filter(
+          (team) => String(team.id) === String(selectedProject.teamId)
+        ),
+        ...teams.filter(
+          (team) =>
+            String(team.id) !== String(selectedProject.teamId) &&
+            !occupiedTeamIds.includes(String(team.id))
+        ),
+      ]
+    : teams;
 
   return (
     <div>
@@ -125,12 +356,7 @@ export default function Projects() {
           />
         </div>
 
-        <button
-          className="btn btn-success"
-          data-bs-toggle="modal"
-          data-bs-target="#createProjectModal"
-          type="button"
-        >
+        <button className="btn btn-success" type="button" onClick={openCreate}>
           <i className="bi bi-plus-lg me-2"></i>
           Crear proyecto
         </button>
@@ -166,9 +392,9 @@ export default function Projects() {
                   <ProjectRow
                     key={p.id || index}
                     project={p}
-                    onEdit={() => setSelectedProject(p)}
-                    onView={() => setSelectedProject(p)}
-                    onDelete={() => setSelectedProject(p)}
+                    onEdit={() => openEdit(p)}
+                    onView={() => openView(p)}
+                    onDelete={() => openDelete(p)}
                   />
                 ))
               )}
@@ -177,17 +403,74 @@ export default function Projects() {
         </div>
       </section>
 
-      <CreateProjectModal onAddProject={handleAddProject} />
-      <EditProjectModal
-        project={selectedProject}
-        onEditProject={handleEditProject}
-      />
-      <ViewProjectModal project={selectedProject} />
-      <DeleteProjectModal
-        project={selectedProject}
-        onDeleteProject={handleDeleteProject}
-      />
-      <MaterialsProjectModal project={selectedProject} />
+      {showCreateModal && (
+        <CreateProjectModal
+          teams={availableTeamsForCreate}
+          onClose={() => setShowCreateModal(false)}
+          onAddProject={handleAddProject}
+          onOpenMaterials={() =>
+            openMaterials({
+              projectId: "draft-project",
+              projectName: "Nuevo proyecto",
+              readOnly: false,
+            })
+          }
+          materialsCount={(materialsByProject["draft-project"] || []).length}
+          submitting={submitting}
+        />
+      )}
+
+      {showEditModal && selectedProject && (
+        <EditProjectModal
+          project={selectedProject}
+          teams={availableTeamsForEdit}
+          onClose={() => setShowEditModal(false)}
+          onEditProject={handleEditProject}
+          onOpenMaterials={() =>
+            openMaterials({
+              projectId: selectedProject.id,
+              projectName: selectedProject.name,
+              readOnly: false,
+            })
+          }
+          materialsCount={(materialsByProject[selectedProject.id] || []).length}
+          submitting={submitting}
+        />
+      )}
+
+      {showViewModal && selectedProject && (
+        <ViewProjectModal
+          project={selectedProject}
+          onClose={() => setShowViewModal(false)}
+          onOpenMaterials={() =>
+            openMaterials({
+              projectId: selectedProject.id,
+              projectName: selectedProject.name,
+              readOnly: true,
+            })
+          }
+          materialsCount={(materialsByProject[selectedProject.id] || []).length}
+        />
+      )}
+
+      {showDeleteModal && selectedProject && (
+        <DeleteProjectModal
+          project={selectedProject}
+          onClose={() => setShowDeleteModal(false)}
+          onDeleteProject={handleDeleteProject}
+          submitting={submitting}
+        />
+      )}
+
+      {showMaterialsModal && (
+        <MaterialsProjectModal
+          projectName={materialsContext?.projectName || "Proyecto"}
+          materials={currentMaterials}
+          readOnly={materialsContext?.readOnly || false}
+          onClose={() => setShowMaterialsModal(false)}
+          onSave={handleSaveMaterials}
+        />
+      )}
     </div>
   );
 }

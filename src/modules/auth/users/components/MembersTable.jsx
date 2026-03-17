@@ -2,12 +2,11 @@ export default function MembersTable({
   data = [],
   onEdit,
   onDelete,
-  onView
+  onView,
 }) {
   return (
     <div className="table-responsive">
       <table className="table table-hover align-middle">
-        
         <thead className="teams-table-head">
           <tr>
             <th>#</th>
@@ -29,43 +28,45 @@ export default function MembersTable({
             data.map((u, index) => (
               <tr key={u.id ?? index}>
                 <td>{index + 1}</td>
-
                 <td>{u.name ?? "-"}</td>
                 <td>{u.username ?? "-"}</td>
                 <td>{u.team ?? "-"}</td>
 
                 <td className="text-center" style={{ width: 180 }}>
-                  
                   <button
-                    className="action-btn"
-                    title="Editar"
-                    onClick={() => onEdit(u)}
-                  >
-                    <i className="bi bi-pencil-fill action-icon"></i>
-                  </button>
+  className="action-btn"
+  title="Editar"
+  data-bs-toggle="modal"
+  data-bs-target="#editUserModal"
+  onClick={() => onEdit && onEdit(u)}
+>
+  <i className="bi bi-pencil-fill action-icon"></i>
+</button>
 
-                  <button
-                    className="action-btn"
-                    title="Eliminar"
-                    onClick={() => onDelete(u)}
-                  >
-                    <i className="bi bi-trash-fill action-icon"></i>
-                  </button>
+<button
+  className="action-btn"
+  title="Eliminar"
+  data-bs-toggle="modal"
+  data-bs-target="#deleteUserModal"
+  onClick={() => onDelete && onDelete(u)}
+>
+  <i className="bi bi-trash-fill action-icon"></i>
+</button>
 
-                  <button
-                    className="action-btn"
-                    title="Ver"
-                    onClick={() => onView(u)}
-                  >
-                    <i className="bi bi-eye-fill action-icon"></i>
-                  </button>
-
+<button
+  className="action-btn"
+  title="Ver"
+  data-bs-toggle="modal"
+  data-bs-target="#viewUserModal"
+  onClick={() => onView && onView(u)}
+>
+  <i className="bi bi-eye-fill action-icon"></i>
+</button>
                 </td>
               </tr>
             ))
           )}
         </tbody>
-
       </table>
     </div>
   );

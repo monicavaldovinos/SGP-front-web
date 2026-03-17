@@ -227,24 +227,35 @@ export default function Login({ setSession }) {
   }, [navigate]);
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const response = await login(username, password);
+  try {
+    const response = await login(username, password);
+    console.log("LOGIN RESPONSE:", response);
 
-      sessionStorage.setItem("token", response.data.token);
-      sessionStorage.setItem("rol", response.data.rol);
-      sessionStorage.setItem("nombre", response.data.nombre);
-      sessionStorage.setItem("idUsuario", response.data.idUsuario);
-      sessionStorage.setItem("username", response.data.username);
+    const token = response?.data?.token || "";
+    const usuario = response?.data?.usuario || {};
 
-      setSession(true);
-      navigate("/auth/home");
-    } catch (error) {
-      console.log(error);
-      alert("Credenciales incorrectas");
+    sessionStorage.setItem("token", token);
+    sessionStorage.setItem("rol", usuario?.rol || "");
+    sessionStorage.setItem("nombre", usuario?.nombre || "");
+    sessionStorage.setItem("idUsuario", usuario?.idUsuario || "");
+    sessionStorage.setItem("username", usuario?.username || "");
+
+    console.log("TOKEN GUARDADO:", sessionStorage.getItem("token"));
+
+    if (!token) {
+      alert("No se recibió el token del backend.");
+      return;
     }
-  };
+
+    setSession(true);
+    navigate("/auth/home");
+  } catch (error) {
+    console.log("Error login:", error);
+    alert(error?.response?.data?.message || "Credenciales incorrectas");
+  }
+};
 
   return (
     <>

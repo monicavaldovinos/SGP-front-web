@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export default function CreateTeam({
+export default function EditTeam({
+  team,
   onClose,
-  onCreate,
+  onSave,
   submitting = false,
   proyectos = [],
   miembrosDisponibles = [],
@@ -13,6 +14,19 @@ export default function CreateTeam({
   const [logo, setLogo] = useState("");
   const [miembroSelect, setMiembroSelect] = useState("");
   const [miembrosIds, setMiembrosIds] = useState([]);
+
+  useEffect(() => {
+    if (!team) return;
+
+    setNombre(team.nombre || "");
+    setProyectoId(team.proyectoId ? String(team.proyectoId) : "");
+    setLiderId(team.liderId ? String(team.liderId) : "");
+    setLogo(team.logo || "");
+    setMiembroSelect("");
+    setMiembrosIds(
+      Array.isArray(team.miembrosIds) ? team.miembrosIds.map(String) : []
+    );
+  }, [team]);
 
   const lideresOptions = useMemo(() => {
     return miembrosDisponibles
@@ -60,7 +74,7 @@ export default function CreateTeam({
       return;
     }
 
-    onCreate({
+    onSave({
       nombre: nombre.trim(),
       proyectoId: String(proyectoId),
       liderId: String(liderId),
@@ -82,7 +96,7 @@ export default function CreateTeam({
         <form onSubmit={handleSubmit}>
           <h2 className="modal-title-custom text-center mb-4">
             <i className="bi bi-people-fill me-2"></i>
-            Crear equipo
+            Editar equipo
           </h2>
 
           <div className="mb-3">
@@ -90,7 +104,6 @@ export default function CreateTeam({
             <input
               type="text"
               className="form-control"
-              placeholder="Nombre del equipo"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
@@ -191,7 +204,7 @@ export default function CreateTeam({
               className="project-btn-save"
               disabled={submitting}
             >
-              {submitting ? "Guardando..." : "Crear equipo"}
+              {submitting ? "Guardando..." : "Guardar"}
             </button>
           </div>
         </form>

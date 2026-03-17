@@ -1,15 +1,11 @@
 export default function TeamRow({ team, onEdit, onDelete, onView }) {
-
   return (
-
     <tr>
-
       <td>{team.nombre}</td>
       <td>{team.lider}</td>
       <td>{team.miembros}</td>
 
       <td className="text-center" style={{ width: 180 }}>
-
         <button
           className="action-btn"
           title="Editar"
@@ -33,10 +29,7 @@ export default function TeamRow({ team, onEdit, onDelete, onView }) {
         >
           <i className="bi bi-eye-fill action-icon"></i>
         </button>
-
       </td>
-
     </tr>
-
   );
 }

@@ -5,8 +5,18 @@ export const getTeams = async () => {
   return response.data;
 };
 
+export const getTeamById = async (id) => {
+  const response = await api.get(`/equipos/${id}`);
+  return response.data;
+};
+
+export const getTeamMembers = async (id) => {
+  const response = await api.get(`/equipos/${id}/integrantes`);
+  return response.data;
+};
+
 export const createTeam = async (team) => {
-  const response = await api.post("/equipos", team);
+  const response = await api.post("/equipos/crear-con-miembros", team);
   return response.data;
 };
 
