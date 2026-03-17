@@ -16,6 +16,7 @@ export default function App() {
   return(session ? (
     <AuthRouter setSession={setSession} />
   ) : (
+    
     <PublicRouter setSession={setSession} />
   ));
 
